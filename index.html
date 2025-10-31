@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Secret Sauce 🔥</title>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+    padding: 20px;
+  }
+
+  h1 {
+    margin-bottom: 10px;
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+  }
+
+  p {
+    font-size: 1rem;
+    margin-bottom: 20px;
+    opacity: 0.9;
+  }
+
+  input, textarea, button {
+    width: 90%;
+    max-width: 400px;
+    padding: 12px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+
+  input, textarea {
+    background: rgba(255, 255, 255, 0.9);
+    color: #000;
+    outline: none;
+  }
+
+  button {
+    background: #fff;
+    color: #ff5e78;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  button:hover {
+    background: #ff5e78;
+    color: #fff;
+  }
+
+  #output {
+    width: 90%;
+    max-width: 400px;
+    word-wrap: break-word;
+    background: rgba(255,255,255,0.95);
+    color: #000;
+    border-radius: 10px;
+    padding: 12px;
+    margin-top: 15px;
+    display: none;
+  }
+
+  #overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    padding: 20px;
+    color: #fff;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from {opacity: 0;} to {opacity: 1;}
+  }
+
+  #overlayBox {
+    width: 100%;
+    max-width: 400px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+  }
+  #overlayBox input, #overlayBox textarea {
+    background: rgba(255,255,255,0.9);
+    color: #000;
+  }
+  #closeOverlay {
+    background: #ff4f4f;
+    color: #fff;
+    margin-top: 10px;
+  }
+  #closeOverlay:hover {
+    background: #c00;
+  }
+
+  footer {
+    position: fixed;
+    bottom: 10px;
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+</style>
+</head>
+<body>
+
+<h1>🕵️ Secret Sauce 🔥</h1>
+<p>Turn your messages into secret codes and decode your friends' mysteries — just for fun!</p>
+<p>Send encrypted secrets like a pro spy 😎</p>
+
+<input type="text" id="textInput" maxlength="100" placeholder="Type your secret...">
+<input type="text" id="keyInput" placeholder="Pick a spicy key 🔑">
+<button onclick="encodeText()">🔥 Encrypt It</button>
+<button onclick="openDecode()">🧩 Reveal Secret</button>
+
+<div id="output"></div>
+
+<!-- Full-screen Decode Overlay -->
+<div id="overlay">
+  <div id="overlayBox">
+    <h2>🧩 Reveal the Secret</h2>
+    <textarea id="encodedInput" placeholder="Paste encrypted mystery here..."></textarea>
+    <input type="text" id="decodeKey" placeholder="Enter the magic key 🪄">
+    <button onclick="decodeText()">🔍 Reveal Now</button>
+    <div id="decodedOutput" style="margin-top:15px;"></div>
+    <button id="closeOverlay" onclick="closeDecode()">Close</button>
+  </div>
+</div>
+
+<footer>© 2025 Secret Sauce 🔥</footer>
+
+<script>
+  let lastEncoded = "";
+
+  function encodeText() {
+    const text = document.getElementById("textInput").value;
+    const key = document.getElementById("keyInput").value;
+    const output = document.getElementById("output");
+
+    if (!text || !key) {
+      alert("Yo! You need both a secret and a key to cook the sauce 🧪");
+      return;
+    }
+
+    let level1 = [];
+    for (let i = 0; i < text.length; i++) {
+      const t = text.charCodeAt(i);
+      const k = key.charCodeAt(i % key.length);
+      level1.push((t + k) % 128);
+    }
+
+    let level2 = [];
+    for (let i = 0; i < level1.length; i++) {
+      const val = (level1[level1.length - 1 - i] + 7) % 128;
+      level2.push(val);
+    }
+
+    let encoded = "";
+    for (let c of level2) {
+      if (c >= 32 && c <= 126) encoded += String.fromCharCode(c);
+      else encoded += "\\x" + c.toString(16).padStart(2, "0");
+    }
+
+    lastEncoded = encoded;
+    output.style.display = "block";
+    output.textContent = "🧊 Your encrypted code:\n" + encoded;
+  }
+
+  function openDecode() {
+    document.getElementById("overlay").style.display = "flex";
+    if (lastEncoded) document.getElementById("encodedInput").value = lastEncoded;
+  }
+
+  function closeDecode() {
+    document.getElementById("overlay").style.display = "none";
+    document.getElementById("decodedOutput").innerHTML = "";
+  }
+
+  function parseEncoded(s) {
+    const arr = [];
+    for (let i = 0; i < s.length; i++) {
+      if (s[i] === "\\" && (i + 3) < s.length && (s[i+1] === 'x' || s[i+1] === 'X')) {
+        const hex = s.substr(i + 2, 2);
+        if (/^[0-9a-fA-F]{2}$/.test(hex)) {
+          arr.push(parseInt(hex, 16));
+          i += 3;
+          continue;
+        }
+      }
+      arr.push(s.charCodeAt(i));
+    }
+    return arr;
+  }
+
+  function decodeText() {
+    const encoded = document.getElementById("encodedInput").value;
+    const key = document.getElementById("decodeKey").value;
+    const outDiv = document.getElementById("decodedOutput");
+
+    if (!encoded || !key) {
+      outDiv.innerHTML = "⚠️ You need both the mystery and the magic key!";
+      return;
+    }
+
+    const asciiArr = parseEncoded(encoded);
+    let level1 = asciiArr.map(v => (v - 7 + 128) % 128).reverse();
+
+    let decoded = "";
+    for (let i = 0; i < level1.length; i++) {
+      const k = key.charCodeAt(i % key.length);
+      decoded += String.fromCharCode((level1[i] - k + 128) % 128);
+    }
+
+    outDiv.innerHTML = "🎉 Decoded Message: <br><strong>" + decoded + "</strong>";
+  }
+</script>
+
+</body>
+</html>
